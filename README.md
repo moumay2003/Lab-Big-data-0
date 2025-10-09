@@ -108,11 +108,58 @@ mvn clean compile package
 copy target\HDFSWrite.jar "C:\Users\mouad\Documents\hadoop_project\"
 ```
 
-### Running the Application
+### Running the HDFSWrite Application
 ```bash
 # Inside hadoop-master container
 hadoop jar /shared_volume/HDFSWrite.jar /user/root/bonjour.txt "Hello HDFS!"
 hadoop jar /shared_volume/HDFSWrite.jar /user/root/input/bonjour.txt "Hello HDFS!"
+```
+
+### HadoopFileStatus Class
+A Java application that displays detailed information about files stored in HDFS.
+
+**Location**: `demo/src/main/java/edu/ensias/hadoop/hdfslab/HadoopFileStatus.java`
+
+**Functionality**:
+- Checks if `/user/root/input/purchases.txt` exists in HDFS
+- Displays file size, owner, permissions, replication factor, and block size
+- Shows block locations and hosts
+- Renames the file from `purchases.txt` to `achats.txt`
+
+### Setting up Data for HadoopFileStatus
+```bash
+# Create input directory in HDFS
+hdfs dfs -mkdir -p /user/root/input
+
+# Create sample purchases.txt file
+cat > /shared_volume/purchases.txt << EOF
+1,apple,2.50
+2,banana,1.25
+3,orange,3.00
+4,grape,4.75
+5,strawberry,5.50
+6,pineapple,6.25
+7,mango,3.75
+8,kiwi,2.25
+9,peach,4.00
+10,watermelon,8.50
+EOF
+
+# Upload file to HDFS
+hdfs dfs -put /shared_volume/purchases.txt /user/root/input/
+
+# Verify file exists
+hdfs dfs -ls /user/root/input/
+hdfs dfs -cat /user/root/input/purchases.txt
+```
+
+### Running the HadoopFileStatus Application
+```bash
+# Inside hadoop-master container
+hadoop jar /shared_volume/HadoopFileStatus.jar
+
+# The program will display file information and rename purchases.txt to achats.txt
+# Note: The command line argument is ignored as the file path is hardcoded
 ```
 
 ## Maven Configuration
