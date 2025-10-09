@@ -114,6 +114,7 @@ copy target\HDFSWrite.jar "C:\Users\mouad\Documents\hadoop_project\"
 hadoop jar /shared_volume/HDFSWrite.jar /user/root/bonjour.txt "Hello HDFS!"
 hadoop jar /shared_volume/HDFSWrite.jar /user/root/input/bonjour.txt "Hello HDFS!"
 ```
+<img width="1069" height="220" alt="image" src="https://github.com/user-attachments/assets/2ce2405d-91ce-4172-9957-6f3c992e6b64" />
 
 ### HadoopFileStatus Class
 A Java application that displays detailed information about files stored in HDFS.
