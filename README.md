@@ -219,9 +219,318 @@ Files placed in either location are accessible from both environments.
 ✅ Shared volume configuration between host and containers  
 ✅ Successful execution of Hadoop jobs  
 
+## MapReduce Programming - WordCount Application
+
+### Project Structure
+```
+LAB MAP_REDUCE/demo/
+├── pom.xml
+└── src/
+    └── main/
+        └── java/
+            └── edu/
+                └── ensias/
+                    └── hadoop/
+                        └── mapreducelab/
+                            ├── WordCount.java          # Main class
+                            ├── TokenizerMapper.java    # Mapper class
+                            └── IntSumReducer.java      # Reducer class
+```
+
+### Objective
+Create a MapReduce application to count word occurrences in a text file.
+
+**Process**:
+1. **Mapping Phase**: Text is split into words. For each word, generate a key/value pair `(word, 1)`.
+2. **Reducing Phase**: Pairs are grouped by word (key). The reducer aggregates values to get total occurrences.
+
+### Implementation Steps
+
+#### 1. Create Package Structure
+```bash
+# Package: edu.ensias.hadoop.mapreducelab
+# Location: src/main/java/edu/ensias/hadoop/mapreducelab/
+```
+
+#### 2. TokenizerMapper Class
+Splits text into words and emits `(word, 1)` pairs.
+
+```java
+package edu.ensias.hadoop.mapreducelab;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
+    private final static IntWritable one = new IntWritable(1);
+    private Text word = new Text();
+
+    public void map(Object key, Text value, Context context) 
+            throws IOException, InterruptedException {
+        StringTokenizer itr = new StringTokenizer(value.toString());
+        while (itr.hasMoreTokens()) {
+            word.set(itr.nextToken());
+            context.write(word, one);
+        }
+    }
+}
+```
+
+#### 3. IntSumReducer Class
+Aggregates word counts by summing values for each key.
+
+```java
+package edu.ensias.hadoop.mapreducelab;
+
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class IntSumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    private IntWritable result = new IntWritable();
+    
+    public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+            throws IOException, InterruptedException {
+        int sum = 0;
+        for (IntWritable val : values) {
+            sum += val.get();
+        }
+        result.set(sum);
+        context.write(key, result);
+    }
+}
+```
+
+#### 4. WordCount Main Class
+Configures and launches the MapReduce job.
+
+```java
+package edu.ensias.hadoop.mapreducelab;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class WordCount {
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "word count");
+        
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
+        
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+```
+
+### Building the JAR
+
+#### Maven Configuration (pom.xml)
+```xml
+<properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>3.2.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>3.2.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <version>3.2.0</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.2</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>edu.ensias.hadoop.mapreducelab.WordCount</mainClass>
+                    </manifest>
+                </archive>
+                <finalName>WordCount</finalName>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+#### Build Commands
+```bash
+# Navigate to project directory
+cd "C:\Users\mouad\OneDrive - um5.ac.ma\Desktop\Lab Big data 0\LAB MAP_REDUCE\demo"
+
+# Build the project
+mvn clean package
+
+# Copy JAR to shared volume
+copy target\WordCount.jar "C:\Users\mouad\OneDrive - um5.ac.ma\Documents\hadoop_project\"
+```
+
+### Running the MapReduce Job
+
+#### Prepare Input Data
+```bash
+# Inside hadoop-master container
+# Create sample text file
+echo "hello world hello hadoop mapreduce wordcount example hello world" > /shared_volume/test.txt
+
+# Create input directory in HDFS
+hdfs dfs -mkdir -p /input
+
+# Upload text file to HDFS
+hdfs dfs -put /shared_volume/test.txt /input/textfile.txt
+
+# Verify file exists
+hdfs dfs -ls /input/
+hdfs dfs -cat /input/textfile.txt
+```
+
+#### Execute MapReduce Job
+```bash
+# Make sure HDFS is not in safe mode
+hdfs dfsadmin -safemode leave
+
+# Delete output directory if it exists (MapReduce requires output directory to not exist)
+hdfs dfs -rm -r /output
+
+# Run the WordCount job
+# Syntax: hadoop jar <jar-file> <input-path> <output-path>
+hadoop jar /shared_volume/WordCount.jar /input/textfile.txt /output
+```
+
+**Important**: When the JAR has a manifest with Main-Class, you don't need to specify the class name in the command.
+
+#### View Results
+```bash
+# List output files
+hdfs dfs -ls /output/
+
+# View word count results
+hdfs dfs -cat /output/part-r-00000
+
+# Download results to local
+hdfs dfs -get /output/part-r-00000 /shared_volume/wordcount_results.txt
+```
+
+### Expected Output
+```
+example	1
+hadoop	1
+hello	3
+mapreduce	1
+world	2
+wordcount	1
+```
+
+### Job Execution Summary
+- **Map tasks**: 1
+- **Reduce tasks**: 1
+- **Input records**: 1
+- **Output records**: 6 (unique words)
+- **Combiner**: Used to optimize shuffle phase
+
+### Common Issues & Solutions
+
+#### 1. Safe Mode Error
+```
+Cannot create directory. Name node is in safe mode.
+```
+**Solution**: Wait 15-20 seconds or run:
+```bash
+hdfs dfsadmin -safemode leave
+```
+
+#### 2. Output Directory Already Exists
+```
+Output directory already exists
+```
+**Solution**: Delete the output directory before running:
+```bash
+hdfs dfs -rm -r /output
+```
+
+#### 3. Input Path Does Not Exist
+```
+Input path does not exist
+```
+**Solution**: Verify input file exists in HDFS:
+```bash
+hdfs dfs -ls /input/
+hdfs dfs -put /shared_volume/yourfile.txt /input/textfile.txt
+```
+
+#### 4. Connection Refused Error
+```
+Call From hadoop-master to hadoop-master:9000 failed on connection exception
+```
+**Solution**: Start HDFS services:
+```bash
+start-dfs.sh
+start-yarn.sh
+jps  # Verify NameNode and DataNode are running
+```
+
+### Monitoring
+
+#### Web Interfaces
+- **Job Tracker**: http://localhost:8088
+  - View running/completed jobs
+  - Check job progress and statistics
+  - View logs and counters
+
+- **NameNode UI**: http://localhost:9870
+  - Browse HDFS filesystem
+  - Check DataNode status
+  - View file blocks and replication
+
+#### Command Line Monitoring
+```bash
+# Check running jobs
+yarn application -list
+
+# View job history
+mapred job -list all
+
+# Check HDFS report
+hdfs dfsadmin -report
+
+# View specific job details
+yarn logs -applicationId <application_id>
+```
+
 ## Next Steps
 
-- Implement MapReduce jobs for data processing
+- Implement advanced MapReduce patterns (joins, sorting)
 - Add more data processing applications
 - Configure Spark for big data analytics
-- Add data visualization components
+- Integrate with Hive for SQL-like queries
