@@ -427,6 +427,7 @@ hdfs dfs -rm -r /output
 # Syntax: hadoop jar <jar-file> <input-path> <output-path>
 hadoop jar /shared_volume/WordCount.jar /input/textfile.txt /output
 ```
+<img width="1304" height="340" alt="image" src="https://github.com/user-attachments/assets/21a324b6-6ddd-44c1-aea3-e43eed9a224f" />
 
 **Important**: When the JAR has a manifest with Main-Class, you don't need to specify the class name in the command.
 
