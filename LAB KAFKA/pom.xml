@@ -22,6 +22,11 @@
             <version>${kafka.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
@@ -45,7 +50,7 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <!-- Assembly plugin for Producer JAR -->
+            <!-- Assembly plugin for multiple JARs -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -85,6 +90,60 @@
                                 </manifest>
                             </archive>
                             <finalName>kafka-consumer-app</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>wordcount-app</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>edu.ensias.kafka.WordCountApp</mainClass>
+                                </manifest>
+                            </archive>
+                            <finalName>kafka-wordcount-app</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>word-producer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>edu.ensias.kafka.WordProducer</mainClass>
+                                </manifest>
+                            </archive>
+                            <finalName>kafka-word-producer-app</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>word-count-consumer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>edu.ensias.kafka.WordCountConsumer</mainClass>
+                                </manifest>
+                            </archive>
+                            <finalName>kafka-word-count-consumer-app</finalName>
                         </configuration>
                     </execution>
                 </executions>
