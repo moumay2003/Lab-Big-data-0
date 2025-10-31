@@ -1,0 +1,39 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# JAR files (optionnel - décommentez si vous ne voulez pas les JARs dans Git)
+# *.jar
+# !**/libs/*.jar
+
+# Hive metastore
+metastore_db/
+derby.log
+
+# Temporary files
+*.tmp
+*.swp
+*~

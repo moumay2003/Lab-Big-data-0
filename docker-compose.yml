@@ -41,6 +41,24 @@ services:
       - hadoop-master
     stdin_open: true
     tty: true  
+  
+  hiveserver2:
+    image: apache/hive:4.0.0-alpha-2
+    container_name: hiveserver2-standalone
+    hostname: hiveserver2
+    ports:
+      - "10000:10000"  # HiveServer2 JDBC
+      - "10002:10002"  # HiveServer2 Web UI
+      - "9083:9083"    # Metastore
+    environment:
+      - SERVICE_NAME=hiveserver2
+    volumes:
+      - "C:/Users/mouad/OneDrive - um5.ac.ma/Documents/hadoop_project:/shared_volume"
+    networks:
+      - hadoop-net
+    stdin_open: true
+    tty: true
+    
 networks:
     hadoop-net:
       driver: bridge
