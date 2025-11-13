@@ -1,93 +1,38 @@
-# Big Data Labs - Hadoop, Kafka & Hive
+# Hadoop Docker Lab Setup
 
-This project contains comprehensive labs for Big Data technologies including Hadoop HDFS, Apache Kafka, and Apache Hive.
+This project demonstrates setting up a Hadoop cluster using Docker containers and creating Java applications to interact with HDFS.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Lab Big data 0/
-├── docker-compose.yml          # Docker services configuration
-├── .gitignore                  # Git ignore patterns
-├── README.md                   # This documentation
-│
-├── Lab1/                       # HDFS Labs
-│   ├── pom.xml
-│   └── src/
-│       └── main/
-│           └── java/
-│               └── edu/
-│                   └── ensias/
-│                       └── hadoop/
-│                           ├── Main.java
-│                           └── hdfslab/
-│                               ├── HadoopFileStatus.java
-│                               └── HDFSWrite.java
-│
-├── LAB MAP_REDUCE/             # MapReduce Labs
-│   └── demo/
-│       ├── pom.xml
-│       └── src/
-│           └── main/
-│               └── java/
-│                   └── edu/
-│                       └── ensias/
-│                           └── hadoop/
-│                               └── mapreducelab/
-│                                   ├── IntSumReducer.java
-│                                   ├── TokenizerMapper.java
-│                                   └── WordCount.java
-│
-├── LAB KAFKA/                  # Kafka Labs
-│   ├── README.md              # Complete Kafka documentation
-│   ├── pom.xml
-│   ├── config/                # Kafka configurations
-│   │   ├── connect-file-source.properties
-│   │   ├── connect-file-sink.properties
-│   │   ├── server-one.properties
-│   │   └── server-two.properties
-│   └── src/
-│       └── main/
-│           └── java/
-│               └── edu/
-│                   └── ensias/
-│                       └── kafka/
-│                           ├── EventProducer.java
-│                           ├── EventConsumer.java
-│                           ├── WordCountApp.java
-│                           ├── WordProducer.java
-│                           └── WordCountConsumer.java
-│
-└── HIVE/                       # Hive Labs
-    ├── README.md              # Complete Hive documentation
-    ├── QUICKSTART.md          # Quick start guide
-    ├── deploy.ps1             # Deployment script
-    ├── data/                  # Sample data files
-    │   ├── clients.txt
-    │   ├── hotels.txt
-    │   └── reservations.txt
-    └── scripts/               # HiveQL scripts
-        ├── Creation.hql
-        ├── Loading.hql
-        ├── Queries.hql
-        └── Cleanup.hql
+├── docker-compose.yml          # Docker container configuration
+├── demo/                       # Maven Java project
+│   ├── pom.xml                # Maven dependencies and build configuration
+│   ├── src/
+│   │   └── main/
+│   │       └── java/
+│   │           └── edu/
+│   │               └── ensias/
+│   │                   └── hadoop/
+│   │                       ├── Main.java
+│   │                       └── hdfslab/
+│   │                           ├── HadoopFileStatus.java
+│   │                           └── HDFSWrite.java
+│   └── target/
+│       ├── HDFSWrite.jar      # Generated JAR file
+│       └── classes/           # Compiled Java classes
+└── README.md                  # This documentation
 ```
 
-## 🐳 Docker Setup
+## Docker Setup
 
-### Services Configuration
-The `docker-compose.yml` configures the following services:
-
-#### Hadoop Cluster
+### Container Configuration
 - **hadoop-master**: Main Hadoop node with NameNode and ResourceManager
   - Ports: 9870 (NameNode UI), 8088 (ResourceManager UI), 8080 (Spark UI), 9000 (NameNode IPC)
-  - Shared volume: `C:/Users/mouad/OneDrive - um5.ac.ma/Documents/hadoop_project:/shared_volume`
+  - Shared volume: `C:/Users/mouad/Documents/hadoop_project:/shared_volume`
 - **hadoop-slave1**: Worker node (port 8040:8042)
 - **hadoop-slave2**: Worker node (port 8041:8042)
-
-#### Apache Hive
-- **hiveserver2**: HiveServer2 with embedded Derby metastore
-  - Ports: 10000 (JDBC), 10002 (Web UI), 9083 (Metastore)
-  - Image: apache/hive:4.0.0-alpha-2
 
 ### Starting the Cluster
 ```bash
@@ -584,118 +529,9 @@ hdfs dfsadmin -report
 yarn logs -applicationId <application_id>
 ```
 
-## 📚 Labs Overview
-
-### 🗂️ Lab 1: HDFS Operations
-**Location**: `Lab1/`
-
-Learn Hadoop Distributed File System operations:
-- File reading and writing
-- Directory operations
-- File status and metadata
-
-**Quick Start**:
-```bash
-cd Lab1
-mvn clean package
-docker cp target/HDFSWrite.jar hadoop-master:/root/
-docker exec -it hadoop-master java -jar /root/HDFSWrite.jar
-```
-
----
-
-### 🗺️ Lab 2: MapReduce
-**Location**: `LAB MAP_REDUCE/`
-
-Implement distributed data processing with MapReduce:
-- Word Count application
-- Mapper and Reducer patterns
-- Combiner optimization
-
-**Quick Start**:
-```bash
-cd "LAB MAP_REDUCE/demo"
-mvn clean package
-docker cp target/wordcount.jar hadoop-master:/root/
-docker exec -it hadoop-master bash
-hadoop jar /root/wordcount.jar edu.ensias.hadoop.mapreducelab.WordCount /input /output
-```
-
----
-
-### 📨 Lab 3: Apache Kafka
-**Location**: `LAB KAFKA/`
-
-Master event streaming with Kafka:
-- Producer/Consumer basics
-- Kafka Connect (File Source/Sink)
-- Kafka Streams (Word Count)
-- Interactive applications
-- Multi-broker cluster setup
-
-**Quick Start**:
-```bash
-cd "LAB KAFKA"
-mvn clean package
-
-# Copy JARs
-docker cp target/kafka-producer-app-jar-with-dependencies.jar hadoop-master:/root/
-docker cp target/kafka-consumer-app-jar-with-dependencies.jar hadoop-master:/root/
-docker cp target/kafka-wordcount-app-jar-with-dependencies.jar hadoop-master:/root/
-
-# Run applications
-docker exec -it hadoop-master bash
-java -jar /root/kafka-producer-app-jar-with-dependencies.jar Hello-Kafka
-```
-
-**Documentation**: See [LAB KAFKA/README.md](LAB%20KAFKA/README.md) for complete guide
-
----
-
-### 🐝 Lab 4: Apache Hive
-**Location**: `HIVE/`
-
-Perform SQL-like queries on big data with Hive:
-- Database and table creation
-- Data loading (clients, hotels, reservations)
-- Partitioning and bucketing
-- Complex queries (joins, aggregations, subqueries)
-- HiveQL scripting
-
-**Quick Start**:
-```powershell
-# Automated deployment
-cd HIVE
-.\deploy.ps1
-
-# Manual execution
-docker exec -it hiveserver2-standalone bash
-beeline -u jdbc:hive2://localhost:10000 scott tiger -f /shared_volume/hive/scripts/Creation.hql
-beeline -u jdbc:hive2://localhost:10000 scott tiger -f /shared_volume/hive/scripts/Loading.hql
-beeline -u jdbc:hive2://localhost:10000 scott tiger -f /shared_volume/hive/scripts/Queries.hql
-```
-
-**Documentation**: See [HIVE/README.md](HIVE/README.md) for complete guide
-
----
-
-## 🌐 Web Interfaces
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| Hadoop NameNode | http://localhost:9870 | HDFS filesystem browser |
-| Hadoop ResourceManager | http://localhost:8088 | YARN job tracker |
-| Spark Master | http://localhost:8080 | Spark cluster UI |
-| HiveServer2 Web UI | http://localhost:10002 | Hive query interface |
-| MapReduce History Server | http://localhost:19888 | Job history |
-
----
-
 ## Next Steps
 
-- ✅ Implement advanced MapReduce patterns (joins, sorting)
-- ✅ Add Kafka event streaming applications
-- ✅ Integrate Hive for SQL-like queries on HDFS
-- ⬜ Configure Spark for advanced analytics
-- ⬜ Implement real-time data pipelines
-- ⬜ Add data visualization dashboards
+- Implement advanced MapReduce patterns (joins, sorting)
+- Add more data processing applications
+- Configure Spark for big data analytics
+- Integrate with Hive for SQL-like queries

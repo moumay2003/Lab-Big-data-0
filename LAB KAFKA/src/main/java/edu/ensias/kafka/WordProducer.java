@@ -8,13 +8,13 @@ import java.util.Scanner;
 
 public class WordProducer {
     public static void main(String[] args) {
-        if(args.length == 0){
+        if (args.length == 0) {
             System.out.println("Entrer le nom du topic");
             return;
         }
-        
+
         String topicName = args[0].toString();
-        
+
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "all");
@@ -23,14 +23,14 @@ public class WordProducer {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        
+
         Producer<String, String> producer = new KafkaProducer<>(props);
         Scanner scanner = new Scanner(System.in);
-        
+
         System.out.println("=== Word Producer - Kafka ===");
         System.out.println("Topic: " + topicName);
         System.out.println("Entrez des mots (Ctrl+C pour quitter):");
-        
+
         try {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
